@@ -19,5 +19,6 @@ else
   dbh = Mysql.new
 end
 
-dbh.query("SET PASSWORD FOR 'root'@'localhost' = PASSWORD('<%= root_password %>')")
+dbh.query("UPDATE mysql.user SET PASSWORD = PASSWORD('<%= root_password %>') WHERE User = 'root'")
+dbh.query("FLUSH PRIVILEGES")
 dbh.reload
