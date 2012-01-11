@@ -26,6 +26,7 @@ class mysql::server(
     "mysql::config" => $config_hash
   }
   create_resources("class", $hash)
+  include mysql::ruby
 
   package{'mysql-server':
     name   => $package_name,
