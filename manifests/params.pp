@@ -35,7 +35,4 @@ class mysql::params{
       fail("Unsupported operating system: ${::operatingsystem}. ${module_name} supports debian, ubuntu, redhat, centos, and fedora.")
     }
   }
-<<<<<<< HEAD
-=======
 }
->>>>>>> rhel-centos-support
