@@ -21,13 +21,12 @@ class mysql::params{
       $ruby_package_name     = 'ruby-mysql'
       $ruby_package_provider = 'yum'
       $python_package_name   = 'MySQL-python'
-      }
     }
     'ubuntu', 'debian': {
-      $service_name         = 'mysql'
-      $client_package_name  = 'mysql-client'
-      $socket               = '/var/run/mysqld/mysqld.sock'
-      $config_file          = '/etc/mysql/my.cnf'
+      $service_name          = 'mysql'
+      $client_package_name   = 'mysql-client'
+      $socket                = '/var/run/mysqld/mysqld.sock'
+      $config_file           = '/etc/mysql/my.cnf'
       $ruby_package_name     = 'libmysql-ruby'
       $ruby_package_provider = 'apt'
       $python_package_name   = 'python-mysqldb'
@@ -36,3 +35,7 @@ class mysql::params{
       fail("Unsupported operating system: ${::operatingsystem}. ${module_name} supports debian, ubuntu, redhat, centos, and fedora.")
     }
   }
+<<<<<<< HEAD
+=======
+}
+>>>>>>> rhel-centos-support
