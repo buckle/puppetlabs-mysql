@@ -17,7 +17,7 @@ Puppet::Type.type(:database_grant).provide(:default) do
     fail('Default provider for database_grant should never be used')
   end
 	
-  def instances
+  def self.instances
     Array.new
   end
 end

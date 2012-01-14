@@ -14,21 +14,25 @@
 class mysql::params{
   case $::operatingsystem {
     'centos', 'redhat', 'fedora': {
-      $service_name         = 'mysqld'
-      $client_package_name  = 'mysql'
-      $socket               = '/var/lib/mysql/mysql.sock'
-      $config_file          = '/etc/my.cnf'
+      $service_name          = 'mysqld'
+      $client_package_name   = 'mysql'
+      $socket                = '/var/lib/mysql/mysql.sock'
+      $config_file           = '/etc/my.cnf'
+      $ruby_package_name     = 'ruby-mysql'
+      $ruby_package_provider = 'yum'
+      $python_package_name   = 'MySQL-python'
+      }
     }
     'ubuntu', 'debian': {
       $service_name         = 'mysql'
       $client_package_name  = 'mysql-client'
       $socket               = '/var/run/mysqld/mysqld.sock'
       $config_file          = '/etc/mysql/my.cnf'
+      $ruby_package_name     = 'libmysql-ruby'
+      $ruby_package_provider = 'apt'
+      $python_package_name   = 'python-mysqldb'
     }
     default: {
       fail("Unsupported operating system: ${::operatingsystem}. ${module_name} supports debian, ubuntu, redhat, centos, and fedora.")
     }
   }
-  $python_package_name  = 'python-mysqldb'
-  $ruby_package_name    = 'ruby-mysql'
-}

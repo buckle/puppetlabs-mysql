@@ -22,7 +22,7 @@ Puppet::Type.type(:database_user).provide(:default) do
     return false
   end
 
-  def instances
+  def self.instances
     Array.new
   end
 end

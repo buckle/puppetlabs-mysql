@@ -23,7 +23,7 @@ Puppet::Type.type(:database).provide(:default) do
     return false
   end
 
-  def instances
+  def self.instances
     Array.new
   end
   # retrieve the current set of mysql databases
