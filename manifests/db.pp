@@ -63,7 +63,7 @@ define mysql::db (
   # privileges => [ 'alter_priv', 'insert_priv', 'select_priv', 'update_priv' ],
     privileges => $safe_grant,
     provider   => 'mysql',
-    require    => Database_user["${user}@${host}"],
+    require    => Database_user["${user}@${host}/${name}"],
   }
 
   if($sql) {
