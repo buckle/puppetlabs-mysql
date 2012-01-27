@@ -1,5 +1,10 @@
 Puppet::Type.type(:database_user).provide(:mysql) do
-  require 'mysql'
+  begin
+    require 'mysql'
+  rescue LoadError
+    confine :true => false
+  end
+
   require 'puppet/util/inifile'
 
   desc "manage users for a mysql database."

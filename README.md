@@ -8,6 +8,13 @@ let Puppetlabs know.
 The mysql module is composed of classes, defined types, and custom
 types/providers
 
+It's important to note, some first runs will fail to manage database, 
+database\_user, and database\_grant resources with an error message:
+*Provider mysql is not functional on this host*
+This is due to the ruby mysql library not being installed yet. When puppet 
+manages the mysql::server class, this library will be installed.
+All subsequent runs of puppet will be able to manage these resources.
+
 Classes
 -------
 

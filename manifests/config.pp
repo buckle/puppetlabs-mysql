@@ -16,7 +16,8 @@ class mysql::config(
     }
 
     # A script is needed to set the mysql password so it isn't leaked
-    # to the process table
+    # to the process table.  This is put in /var/lib/mysql to support
+    # deleting the script when purging mysql from a system
     file { '/var/lib/mysql/mysql_set_pass':
       content => template('mysql/mysql_set_pass.erb'),
       notify  => Exec['set_mysql_rootpw'],

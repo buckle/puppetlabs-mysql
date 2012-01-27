@@ -1,54 +1,59 @@
 # A grant is either global or per-db. This can be distinguished by the syntax
 # of the name:
-# 	user@host => global
-# 	user@host/db => per-db
+#   user@host => global
+#   user@host/db => per-db
 
 MYSQL_USER_PRIVS = [ :select, :insert, :update, :delete,
-	:create, :drop, :reload, :shutdown, :process,
-	:file, :grant, :references, :index, :alter,
-	:show_db, :super, :create_tmp_table, :lock_tables,
-	:execute, :repl_slave, :repl_client, :create_view,
-	:show_view, :create_routine, :alter_routine,
-	:create_user, :event, :trigger
+  :create, :drop, :reload, :shutdown, :process,
+  :file, :grant, :references, :index, :alter,
+  :show_db, :super, :create_tmp_table, :lock_tables,
+  :execute, :repl_slave, :repl_client, :create_view,
+  :show_view, :create_routine, :alter_routine,
+  :create_user, :event, :trigger
 ]
 
 MYSQL_DB_PRIVS = [ :select, :insert, :update, :delete,
-	:create, :drop, :grant, :references, :index,
-	:alter, :create_tmp_table, :lock_tables, :create_view,
-	:show_view, :create_routine, :alter_routine, :execute
+  :create, :drop, :grant, :references, :index,
+  :alter, :create_tmp_table, :lock_tables, :create_view,
+  :show_view, :create_routine, :alter_routine, :execute
 ]
 
 Puppet::Type.type(:database_grant).provide(:mysql) do
 
-  require 'mysql'
+  begin
+    require 'mysql'
+  rescue LoadError
+    confine :true => false
+  end
+
   require 'puppet/util/inifile'
 
-	desc "Uses mysql as database."
+  desc "Uses mysql as database."
 
   defaultfor :kernel => 'Linux'
 
-	# this parses the
-	def split_name(string)
-		matches = /^([^@]*)@([^\/]*)(\/(.*))?$/.match(string).captures.compact
-		case matches.length 
-			when 2
-				{
-					:type => :user,
-					:user => matches[0],
-					:host => matches[1]
-				}
-			when 4
-				{
-					:type => :db,
-					:user => matches[0],
-					:host => matches[1],
-					:db => matches[3]
-				}
-		end
-	end
+  # this parses the
+  def split_name(string)
+    matches = /^([^@]*)@([^\/]*)(\/(.*))?$/.match(string).captures.compact
+    case matches.length 
+      when 2
+        {
+          :type => :user,
+          :user => matches[0],
+          :host => matches[1]
+        }
+      when 4
+        {
+          :type => :db,
+          :user => matches[0],
+          :host => matches[1],
+          :db => matches[3]
+        }
+    end
+  end
 
   def create
-		if @resource[:privileges].nil? or @resource[:privileges].empty?
+    if @resource[:privileges].nil? or @resource[:privileges].empty?
       Puppet.warning 'No privileges given. Defaulting to all'
       @resource[:privileges] = [:all]
     end
@@ -70,10 +75,10 @@ Puppet::Type.type(:database_grant).provide(:mysql) do
     @property_hash[:ensure] = :present
 
     self.privileges = @resource[:privileges]
-	end
+  end
 
-	def destroy
-		dbh = Puppet::Type.type(:database_grant).provider(:mysql).connect
+  def destroy
+    dbh = Puppet::Type.type(:database_grant).provider(:mysql).connect
     name = split_name(@resource[:name])
     case name[:type]
     when :user
@@ -83,13 +88,13 @@ Puppet::Type.type(:database_grant).provide(:mysql) do
     end
 
     @property_hash[:ensure] = :absent
-	end
+  end
 
   def exists?
     @property_hash[:ensure] == :present ? true : false
   end
 
-	def privileges
+  def privileges
     name = split_name(@property_hash[:name])
     privs_hash = name[:type] == :user ? MYSQL_USER_PRIVS : MYSQL_DB_PRIVS
     if (@property_hash[:privileges].sort == privs_hash.sort) or (@property_hash[:privileges] == [ :all ])
@@ -99,37 +104,37 @@ Puppet::Type.type(:database_grant).provide(:mysql) do
     end
   end
 
-	def privileges=(privs)
-		name = split_name(@resource[:name])
-		stmt = ''
-		where = ''
-		all_privs = []
-		case name[:type]
-		when :user
-			stmt = 'update user set '
-			where = ' where user="%s" and host="%s"' % [ name[:user], name[:host] ]
-			all_privs = MYSQL_USER_PRIVS
-		when :db
-			stmt = 'update db set '
-			where = ' where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
-			all_privs = MYSQL_DB_PRIVS
-		end
+  def privileges=(privs)
+    name = split_name(@resource[:name])
+    stmt = ''
+    where = ''
+    all_privs = []
+    case name[:type]
+    when :user
+      stmt = 'update user set '
+      where = ' where user="%s" and host="%s"' % [ name[:user], name[:host] ]
+      all_privs = MYSQL_USER_PRIVS
+    when :db
+      stmt = 'update db set '
+      where = ' where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
+      all_privs = MYSQL_DB_PRIVS
+    end
 
-		if privs[0] == :all 
-			set = all_privs.collect { |p| "#{p}_priv = 'Y'" }.join(', ')
+    if privs[0] == :all 
+      set = all_privs.collect { |p| "#{p}_priv = 'Y'" }.join(', ')
     else
-		  set = all_privs.collect do |p| 
+      set = all_privs.collect do |p| 
         "%s = '%s'" % ["#{p}_priv", privs.include?(p) ? 'Y' : 'N'] 
       end.join(', ')
     end
 
-		stmt = stmt << set << where
+    stmt = stmt << set << where
 
     dbh = Puppet::Type.type(:database_grant).provider(:mysql).connect
     dbh.select_db('mysql').query stmt
     dbh.reload
     @property_hash[:privileges] = privs
-	end
+  end
 
   def self.prefetch(resources)
     instances.each do |prov|
