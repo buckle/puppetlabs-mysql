@@ -13,7 +13,8 @@ Puppet::Type.type(:database_user).provide(:mysql) do
 
   def create
     dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    dbh.select_db('mysql').query("create user '%s' identified by PASSWORD '%s'" % [ @resource[:name].sub("@", "'@'"), @resource[:password_hash] ])
+    user = @resource[:name].sub('/^([^@]*)@([^\/]*)(\/(.*))?$/','\1\'@\'\2')
+    dbh.select_db('mysql').query("create user '%s' identified by PASSWORD '%s'" % [ user, @resource[:password_hash] ])
     dbh.reload
     @property_hash[:ensure] = :present
     @property_hash[:password_hash] = @resource[:password_hash]
