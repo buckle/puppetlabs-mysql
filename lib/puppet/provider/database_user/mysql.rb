@@ -22,7 +22,8 @@ Puppet::Type.type(:database_user).provide(:mysql) do
  
   def destroy
     dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    dbh.select_db('mysql').query("drop user '%s'" % @resource[:name].sub("@", "'@'"))
+    user = @resource[:name].sub(/^([^@]*)@([^\/]*)(\/(.*))?$/,'\1\'@\'\2')
+    dbh.select_db('mysql').query("drop user '%s'" % user)
     dbh.reload
     @property_hash[:ensure] = :absent
   end
@@ -37,7 +38,8 @@ Puppet::Type.type(:database_user).provide(:mysql) do
  
   def password_hash=(string)
     dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    dbh.select_db('mysql').query("SET PASSWORD FOR '%s' = '%s'" % [ @resource[:name].sub("@", "'@'"), string ])
+    user = @resource[:name].sub(/^([^@]*)@([^\/]*)(\/(.*))?$/,'\1\'@\'\2')
+    dbh.select_db('mysql').query("SET PASSWORD FOR '%s' = '%s'" % [ user, string ])
     dbh.reload
     @property_hash[:password_hash] = string
   end
