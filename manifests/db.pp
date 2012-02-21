@@ -52,7 +52,7 @@ define mysql::db (
     }
   }
 
-  database_user{"${user}@${host}/${name}":
+  database_user{"${user}@${host}":
     ensure        => present,
     password_hash => mysql_password($password),
     provider      => 'mysql',
@@ -63,7 +63,7 @@ define mysql::db (
   # privileges => [ 'alter_priv', 'insert_priv', 'select_priv', 'update_priv' ],
     privileges => $safe_grant,
     provider   => 'mysql',
-    require    => Database_user["${user}@${host}/${name}"],
+    require    => Database_user["${user}@${host}"],
   }
 
   if($sql) {
