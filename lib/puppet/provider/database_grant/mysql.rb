@@ -15,7 +15,8 @@ MYSQL_USER_PRIVS = [ :select, :insert, :update, :delete,
 MYSQL_DB_PRIVS = [ :select, :insert, :update, :delete,
   :create, :drop, :grant, :references, :index,
   :alter, :create_tmp_table, :lock_tables, :create_view,
-  :show_view, :create_routine, :alter_routine, :execute
+  :show_view, :create_routine, :alter_routine, :execute,
+  :trigger
 ]
 
 Puppet::Type.type(:database_grant).provide(:mysql) do
