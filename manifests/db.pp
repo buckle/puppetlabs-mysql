@@ -17,7 +17,7 @@
 # Requires:
 #
 # Sample Usage:
-# 
+#
 #  mysql::db { 'mydb':
 #    user     => 'my_user',
 #    password => 'password',
@@ -54,13 +54,15 @@ define mysql::db (
 
   database_user{"${user}@${host}":
     ensure        => present,
-    password_hash => mysql_password($password),
+    password_hash => $password ? {
+      /^\*[A-F0-9]+$/ => $password,
+      default => mysql_password($password),
+    },
     provider      => 'mysql',
     require       => Database[$name],
   }
 
   database_grant{"${user}@${host}/${name}":
-  # privileges => [ 'alter_priv', 'insert_priv', 'select_priv', 'update_priv' ],
     privileges => $safe_grant,
     provider   => 'mysql',
     require    => Database_user["${user}@${host}"],
@@ -68,8 +70,9 @@ define mysql::db (
 
   if($sql) {
     exec{"${name}-import-import":
-      command     => "/usr/bin/mysql -u ${user} -p${password} -h ${host} ${name} < ${sql}",
+      command     => "/usr/bin/mysql -uroot -h ${host} ${name} < ${sql}",
       logoutput   => true,
+      require     => File['/root/.my.cnf'],
       refreshonly => $enforce_sql ? {
         true  => false,
         false => true,
