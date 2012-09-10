@@ -59,11 +59,12 @@ class mysql::config(
 
   file { $mysql::params::config_file:
     content => template('mysql/my.cnf.erb'),
-    mode    => '0644'
+    mode    => '0644',
   }
 
   file { "/var/log/mysql":
     ensure  => directory,
-    mode    => 0755,
+    mode    => 2755,
+    group   => 'dbas',
   }
 }
