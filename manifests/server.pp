@@ -35,9 +35,10 @@ class mysql::server(
     notify => Service['mysqld'],
   }
   service { 'mysqld':
-    name   => $service_name,
-    ensure => running,
-    enable => true,
+    name    => $service_name,
+    require => File["/var/log/mysql"],
+    ensure  => running,
+    enable  => true,
   }
   # this kind of sucks, that I have to specify a difference resource for restart.
   # the reason is that I need the service to be started before mods to the config
