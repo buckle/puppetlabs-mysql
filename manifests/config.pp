@@ -64,5 +64,6 @@ class mysql::config(
 
   file { "/var/log/mysql":
     ensure  => directory,
+    mode    => 0755,
   }
 }
