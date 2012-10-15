@@ -1,7 +1,6 @@
 [client]
 port    				= <%= port %>
 socket    				= <%= scope.lookupvar('mysql::params::socket') %>
-default-character-set 	= utf8
 
 [mysqld_safe]
 socket    				= <%= scope.lookupvar('mysql::params::socket') %>
@@ -35,7 +34,7 @@ innodb_buffer_pool_size = <%= innodb_log_buffer_size %>
 innodb_log_file_size 	= <%= innodb_log_file_size %>
 innodb_log_buffer_size 	= <%= innodb_log_buffer_size %>
 
-log-bin			   		= /var/lib/binlog/mysql-bin
+log-bin			   		= /var/lib/mysql/binlog/mysql-bin
 slow_query_log_file    	= /var/log/mysql/slow_query.log
 log-error          		= /var/log/mysql/error.log
 expire_logs_days   		= <%= expire_logs_days %>
