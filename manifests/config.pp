@@ -1,10 +1,20 @@
 class mysql::config(
-  $root_password = 'UNSET',
-  $old_root_password = '',
-  $bind_address = '127.0.0.1',
-  $port = 3306,
+  $root_password 			= 'UNSET',
+  $old_root_password 		= '',
+  $bind_address 			= '127.0.0.1',
+  $port 					= 3306,
   # rather or not to store the rootpw in /etc/my.cnf
-  $etc_root_password = false
+  $etc_root_password 		= false,
+  # mysqld configs
+  $query_cache_type 		= 0,
+  $query_cache_size			= "16M",
+  $query_cache_limit		= "1M",
+  $innodb_log_buffer_size 	= "2G",
+  $innodb_log_file_size 	= "256M",
+  $innodb_log_buffer_size 	= "4M",
+  $expire_logs_days 		= 10,
+  $max_binlog_size 			= "100M",
+  $table_cache 				= 804
 ) {
   include mysql::params
 
