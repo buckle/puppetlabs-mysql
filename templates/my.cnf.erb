@@ -1,58 +1,33 @@
 [client]
-port    				= <%= port %>
-socket    				= <%= scope.lookupvar('mysql::params::socket') %>
-
+port    = <%= port %>
+socket    = <%= scope.lookupvar('mysql::params::socket') %>
 [mysqld_safe]
-socket    				= <%= scope.lookupvar('mysql::params::socket') %>
-nice    				= 0
-
+socket    = <%= scope.lookupvar('mysql::params::socket') %>
+nice    = 0
 [mysqld]
-user    				= mysql
-socket    				= <%= scope.lookupvar('mysql::params::socket') %>
-port      				= <%= port %>
-basedir   				= /usr
-datadir   				= /var/lib/mysql
-tmpdir    				= /tmp
-character-set-server   	= utf8
-bind-address   			= <%= bind_address %>
-
-max_allowed_packet 		= 32M
+user    = mysql
+socket    = <%= scope.lookupvar('mysql::params::socket') %>
+port      = <%= port %>
+basedir   = /usr
+datadir   = /var/lib/mysql
+tmpdir    = /tmp
 skip-external-locking
-key_buffer         		= 16M
-max_allowed_packet 		= 16M
-thread_stack       		= 192K
-thread_cache_size  		= 8
-myisam-recover     		= BACKUP
-
-query_cache_type 		= <%= query_cache_type %>
-query_cache_size 		= <%= query_cache_size %>
-query_cache_limit 		= <%= query_cache_limit %>
-
-innodb_file_per_table
-default-storage-engine 	= InnoDB
-innodb_buffer_pool_size = <%= innodb_log_buffer_size %>
-innodb_log_file_size 	= <%= innodb_log_file_size %>
-innodb_log_buffer_size 	= <%= innodb_log_buffer_size %>
-
-log-bin			   		= /var/lib/mysql/binlog/mysql-bin
-slow_query_log_file    	= /var/log/mysql/slow_query.log
-log-error          		= /var/log/mysql/error.log
-expire_logs_days   		= <%= expire_logs_days %>
-max_binlog_size    		= <%= max_binlog_size %>
-slow-query-log         	= 1
-long_query_time        	= 1
-log_output             	= TABLE
-log-queries-not-using-index
-min-examined-row-limit 	= 5000
-
-table_cache 			= <%= table_cache %>
-
+bind-address    = <%= bind_address %>
+key_buffer         = 16M
+max_allowed_packet = 16M
+thread_stack       = 192K
+thread_cache_size  = 8
+myisam-recover     = BACKUP
+query_cache_limit  = 1M
+query_cache_size   = 16M
+log-error          = /var/log/mysql/error.log
+expire_logs_days   = 10
+max_binlog_size    = 100M
 [mysqldump]
 quick
 quote-names
-max_allowed_packet 		= 32M
-
+max_allowed_packet = 16M
 [mysql]
 [isamchk]
-key_buffer    			= 16M
+key_buffer    = 16M
 !includedir /etc/mysql/conf.d/
