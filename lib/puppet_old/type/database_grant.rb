@@ -1,7 +1,7 @@
 # This has to be a separate type to enable collecting
 Puppet::Type.newtype(:database_grant) do
   @doc = "Manage a database user's rights."
-  #ensurable
+  ensurable
 
   autorequire :database do
     # puts "Starting db autoreq for %s" % self[:name]
@@ -25,13 +25,13 @@ Puppet::Type.newtype(:database_grant) do
     reqs
   end
 
-  newparam(:name, :namevar=>true) do
+  newparam(:name) do
     desc "The primary key: either user@host for global privilges or user@host/database for database specific privileges"
   end
 
   newproperty(:privileges, :array_matching => :all) do
     desc "The privileges the user should have. The possible values are implementation dependent."
-
+    
     def should_to_s(newvalue = @should)
       if newvalue
         unless newvalue.is_a?(Array)
@@ -42,14 +42,14 @@ Puppet::Type.newtype(:database_grant) do
         nil
       end
     end
-
+    
     def is_to_s(currentvalue = @is)
       if currentvalue
         unless currentvalue.is_a?(Array)
           currentvalue = [ currentvalue ]
         end
         currentvalue.collect do |v| v.downcase end.sort.join ", "
-      else
+        else
         nil
       end
     end
@@ -58,18 +58,16 @@ Puppet::Type.newtype(:database_grant) do
     def insync?(is)
       if defined? @should and @should
         case self.should_to_s
-        when "all"
+          when "all"
           self.provider.all_privs_set?
-        when self.is_to_s(is)
+          when self.is_to_s(is)
           true
-        else
+          else
           false
         end
-      else
+        else
         true
       end
     end
   end
-
 end
-

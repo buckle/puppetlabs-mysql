@@ -1,84 +1,42 @@
 Puppet::Type.type(:database_user).provide(:mysql) do
-  begin
-    require 'mysql'
-  rescue LoadError
-    confine :true => false
-  end
-
-  require 'puppet/util/inifile'
 
   desc "manage users for a mysql database."
 
   defaultfor :kernel => 'Linux'
 
-  def create
-    dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    user = @resource[:name].sub(/^([^@]*)@([^\/]*)(\/(.*))?$/,'\1\'@\'\2')
-    dbh.select_db('mysql').query("create user '%s' identified by PASSWORD '%s'" % [ user, @resource[:password_hash] ])
-    dbh.reload
-    @property_hash[:ensure] = :present
-    @property_hash[:password_hash] = @resource[:password_hash]
-  end
- 
-  def destroy
-    dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    user = @resource[:name].sub(/^([^@]*)@([^\/]*)(\/(.*))?$/,'\1\'@\'\2')
-    dbh.select_db('mysql').query("drop user '%s'" % user)
-    dbh.reload
-    @property_hash[:ensure] = :absent
-  end
- 
-  def exists?
-    @property_hash[:ensure] == :present ? true : false    
-  end
- 
-  def password_hash
-    @property_hash[:password_hash]
-  end
- 
-  def password_hash=(string)
-    dbh = Puppet::Type.type(:database_user).provider(:mysql).connect
-    user = @resource[:name].sub(/^([^@]*)@([^\/]*)(\/(.*))?$/,'\1\'@\'\2')
-    dbh.select_db('mysql').query("SET PASSWORD FOR '%s' = '%s'" % [ user, string ])
-    dbh.reload
-    @property_hash[:password_hash] = string
-  end
-
-  def self.prefetch(resources)
-    instances.each do |prov|
-      if resource = resources[prov.name]
-        resource.provider = prov
-      end
-    end
-  end
+  optional_commands :mysql      => 'mysql'
+  optional_commands :mysqladmin => 'mysqladmin'
 
   def self.instances
-    dbh = self.connect
-    instances = Array.new
-
-    dbh.select_db('mysql').query('SELECT * FROM user').each_hash do |result|
-      host = result['Host']
-      user = result['User']
-      password_hash = result['Password']
-
-      @property_hash = { :name => "#{user}@#{host}", :user => user, :password_hash => password_hash, :host => host, :ensure => :present }
-      instances << new(@property_hash)
-    end
-    instances
-  end
-
-  def self.connect
-    if File.exists? '/root/.my.cnf'
-      config = Puppet::Util::IniConfig::File.new
-      config.read '/root/.my.cnf'
-      unless config['client'].nil?
-        config_host   = config['client']['host']
-        config_user   = config['client']['user']
-        config_passwd = config['client']['password']
-        Mysql.new host=config_host, user=config_user, passwd=config_passwd
-      end
-    else
-      Mysql.new
+    users = mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", '-BNe' "select concat(User, '@',Host) as User from mysql.user").split("\n")
+    users.select{ |user| user =~ /.+@/ }.collect do |name|
+      new(:name => name)
     end
   end
+
+  def create
+    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", "-e", "create user '%s' identified by PASSWORD '%s'" % [ @resource[:name].sub("@", "'@'"), @resource.value(:password_hash) ])
+  end
+
+  def destroy
+    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", "-e", "drop user '%s'" % @resource.value(:name).sub("@", "'@'") )
+  end
+
+  def password_hash
+    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", "-NBe", "select password from mysql.user where CONCAT(user, '@', host) = '%s'" % @resource.value(:name)).chomp
+  end
+
+  def password_hash=(string)
+    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", "-e", "SET PASSWORD FOR '%s' = '%s'" % [ @resource[:name].sub("@", "'@'"), string ] )
+  end
+
+  def exists?
+    not mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "mysql", "-NBe", "select '1' from mysql.user where CONCAT(user, '@', host) = '%s'" % @resource.value(:name)).empty?
+  end
+
+  def flush
+    @property_hash.clear
+    mysqladmin "--defaults-file=#{Facter.value(:root_home)}/.my.cnf", "flush-privileges"
+  end
+
 end
