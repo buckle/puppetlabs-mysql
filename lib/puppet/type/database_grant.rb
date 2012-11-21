@@ -2,7 +2,7 @@
 Puppet::Type.newtype(:database_grant) do
   @doc = "Manage a database user's rights."
   ensurable
-
+  
   autorequire :database do
     # puts "Starting db autoreq for %s" % self[:name]
     reqs = []
@@ -13,7 +13,7 @@ Puppet::Type.newtype(:database_grant) do
     # puts "Autoreq: '%s'" % reqs.join(" ")
     reqs
   end
-
+  
   autorequire :database_user do
     # puts "Starting user autoreq for %s" % self[:name]
     reqs = []
@@ -24,44 +24,45 @@ Puppet::Type.newtype(:database_grant) do
     # puts "Autoreq: '%s'" % reqs.join(" ")
     reqs
   end
-
+  
   newparam(:name) do
     desc "The primary key: either user@host for global privilges or user@host/database for database specific privileges"
   end
-
+  
   newproperty(:privileges, :array_matching => :all) do
     desc "The privileges the user should have. The possible values are implementation dependent."
-
-        def should_to_s(newvalue = @should)
-        if newvalue
-          unless newvalue.is_a?(Array)
-            newvalue = [ newvalue ]
-          end
-          newvalue.collect do |v| v.downcase end.sort.join ", "
-          else
-          nil
-        end
-      end
-      
-      def is_to_s(currentvalue = @is)
-      if currentvalue
-        unless currentvalue.is_a?(Array)
-          currentvalue = [ currentvalue ]
-        end
-        currentvalue.collect do |v| v.downcase end.sort.join ", "
-        else
-        nil
-      end
+    
+    munge do |v|
+      #symbolize v
+      #symbolize v
+      v.intern
+      v.intern
     end
-
-    def insync?(is)
-      if defined?(@should) and @should
-        is_privs = self.provider.privileges.map{|v| v.to_s}.sort.inspect
-        is_privs == self.should_to_s
+    
+    def is_to_s(i_val = @is)
+    if i_val
+      i_val.to_a.map { |v| v.to_s }.sort.inspect
       else
-        true
-      end
+      nil
     end
-
   end
+  
+  def should_to_s(s_val = @should)
+  if s_val
+    s_val.to_a.map { |v| v.to_s }.sort.inspect
+    else
+    nil
+  end
+end
+
+def insync?(is)
+  if defined?(@should) and @should
+    is_privs = self.provider.privileges.map{|v| v.to_s}.sort.inspect
+    is_privs == self.should_to_s
+    else
+    true
+  end
+end
+
+end
 end
