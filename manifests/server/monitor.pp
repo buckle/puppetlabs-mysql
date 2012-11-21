@@ -1,14 +1,13 @@
-
 class mysql::server::monitor (
   $mysql_monitor_username,
   $mysql_monitor_password,
   $mysql_monitor_hostname
 ) {
 
-  database_user{ 
+  database_user{
     "${mysql_monitor_username}@${mysql_monitor_hostname}":
-      password_hash => mysql_password($mysql_monitor_password),
       ensure        => present,
+      password_hash => mysql_password($mysql_monitor_password),
       require       => Service['mysqld'],
   }
   database_grant { "${mysql_monitor_username}@${mysql_monitor_hostname}":
@@ -16,3 +15,4 @@ class mysql::server::monitor (
     require       => [ Mysql_user["${mysql_monitor_username}@${mysql_monitor_hostname}"], Service['mysqld']],
   }
 }
+

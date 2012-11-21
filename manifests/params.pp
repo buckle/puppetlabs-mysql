@@ -1,6 +1,6 @@
 # Class: mysql::params
 #
-# This class holds parameters that need to be 
+# This class holds parameters that need to be
 # accessed by other classes.
 #
 # Parameters:

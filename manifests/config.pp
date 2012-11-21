@@ -21,11 +21,11 @@ class mysql::config(
     file { '/var/lib/mysql/mysql_set_pass':
       content => template('mysql/mysql_set_pass.erb'),
       notify  => Exec['set_mysql_rootpw'],
-      mode    => 0700,
+      mode    => '0700',
     }
 
     exec{ 'set_mysql_rootpw':
-      command     => "/var/lib/mysql/mysql_set_pass",
+      command     => '/var/lib/mysql/mysql_set_pass',
       before      => File['/root/.my.cnf'],
       require     => [Package['ruby-mysql','mysql-server'], Service['mysqld']],
       refreshonly => true,
@@ -35,26 +35,26 @@ class mysql::config(
       content => template('mysql/my.cnf.pass.erb'),
     }
     if $etc_root_password {
-       file{'/etc/my.cnf':
-          content => template('mysql/my.cnf.pass.erb'),
-          require => Exec['set_mysql_rootpw'],
-       }
+      file{'/etc/my.cnf':
+        content => template('mysql/my.cnf.pass.erb'),
+        require => Exec['set_mysql_rootpw'],
+      }
     }
   }
   File {
-    owner => 'root',
-    group => 'root',
-    mode  => '0400',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0400',
     notify  => Exec['mysqld-restart'],
     require => Package['mysql-server']
   }
   file { '/etc/mysql':
-    ensure => directory,
-    mode => '755',
+    ensure  => directory,
+    mode    => '0755',
   }
   file { '/etc/mysql/conf.d':
     ensure  => directory,
-    mode    => '755',
+    mode    => '0755',
   }
 
   file { $mysql::params::config_file:
@@ -62,9 +62,9 @@ class mysql::config(
     mode    => '0644',
   }
 
-  file { "/var/log/mysql":
+  file { '/var/log/mysql':
     ensure  => directory,
-    mode    => 2755,
+    mode    => '2755',
     group   => 'dbas',
   }
 }

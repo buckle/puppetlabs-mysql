@@ -8,7 +8,7 @@ class mysql::secure {
   database_user { '@localhost':
     ensure => absent,
   }
-  database_user { "@${fqdn}":
+  database_user { "@${::fqdn}":
     ensure => absent,
   }
   # These don't work, and I can't figure out why.  We need to comment these

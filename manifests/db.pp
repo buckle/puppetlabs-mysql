@@ -53,13 +53,13 @@ define mysql::db (
   }
 
   database_user{"${user}@${host}":
-    ensure        => present,
-    password_hash => $password ? {
+    ensure            => present,
+    password_hash     => $password ? {
       /^\*[A-F0-9]+$/ => $password,
-      default => mysql_password($password),
+      default         => mysql_password($password),
     },
-    provider      => 'mysql',
-    require       => Database[$name],
+    provider          => 'mysql',
+    require           => Database[$name],
   }
 
   database_grant{"${user}@${host}/${name}":

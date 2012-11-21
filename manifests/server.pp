@@ -25,19 +25,19 @@ class mysql::server(
   # automatically create a class to deal with
   # configuration
   $hash = {
-    "mysql::config" => $config_hash
+    'mysql::config' => $config_hash
   }
-  create_resources("class", $hash)
+  create_resources('class', $hash)
 
   package{'mysql-server':
-    name   => $package_name,
     ensure => present,
+    name   => $package_name,
     notify => Service['mysqld'],
   }
   service { 'mysqld':
-    name    => $service_name,
-    require => File["/var/log/mysql"],
     ensure  => running,
+    name    => $service_name,
+    require => File['/var/log/mysql'],
     enable  => true,
   }
   # this kind of sucks, that I have to specify a difference resource for restart.

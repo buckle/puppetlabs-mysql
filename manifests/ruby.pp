@@ -26,9 +26,9 @@ class mysql::ruby(
   #}
 
   package{'ruby-mysql':
-  #  name => $ruby_mysql_name,
-    name     => $package_name, 
-    provider => $ruby_package_provider,
     ensure   => $ensure,
+  #  name => $ruby_mysql_name,
+    name     => $package_name,
+    provider => $package_provider,
   }
 }
