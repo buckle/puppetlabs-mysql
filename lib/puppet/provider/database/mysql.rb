@@ -1,42 +1,72 @@
 Puppet::Type.type(:database).provide(:mysql) do
+  begin
+    require 'mysql'
+  rescue LoadError
+    confine :true => false
+  end
 
-  desc "Manages MySQL database."
+  require 'puppet/util/inifile'
+
+  desc "Manage a MySQL database."
 
   defaultfor :kernel => 'Linux'
 
-  optional_commands :mysql      => 'mysql'
-  optional_commands :mysqladmin => 'mysqladmin'
-
-  def self.instances
-    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-NBe', "show databases").split("\n").collect do |name|
-      new(:name => name)
-    end
-  end
-
   def create
-    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-NBe', "create database `#{@resource[:name]}` character set #{resource[:charset]}")
+    Puppet::Type.type(:database).provider(:mysql).connect.query("CREATE DATABASE #{@resource[:name]} CHARACTER SET #{@resource[:charset]}")
+    @property_hash[:ensure]  = :present
+    @property_hash[:charset] = @resource[:charset]
   end
 
   def destroy
-    mysqladmin("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-f', 'drop', @resource[:name])
-  end
-
-  def charset
-    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-NBe', "show create database `#{resource[:name]}`").match(/.*?(\S+)\s\*\//)[1]
-  end
-
-  def charset=(value)
-    mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-NBe', "alter database `#{resource[:name]}` CHARACTER SET #{value}")
+    Puppet::Type.type(:database).provider(:mysql).connect.query("DROP DATABASE #{@resource[:name]}")
+    @property_hash[:ensure] = :absent
   end
 
   def exists?
-    begin
-      mysql("--defaults-file=#{Facter.value(:root_home)}/.my.cnf", '-NBe', "show databases").match(/^#{@resource[:name]}$/)
-    rescue => e
-      debug(e.message)
-      return nil
+    @property_hash[:ensure] == :present ? true : false
+  end
+ 
+  def charset
+    @property_hash[:charset]
+  end
+
+  def charset=(value)
+    @property_hash[:charset] = value
+  end
+
+  def self.prefetch(resources)
+    instances.each do |prov|
+      if resource = resources[prov.name]
+        resource.provider = prov
+      end
     end
   end
 
-end
+  def self.instances
+    dbh = self.connect
+    dbh.list_dbs.map do |db|
 
+      charset = dbh.select_db(db).query('show variables like "character_set_database"').fetch_row.last
+
+      @property_hash = {:name => db, :ensure => :present, :charset => charset}
+      new @property_hash
+    end
+  end
+
+  def self.connect
+    if File.exists? '/root/.my.cnf'
+      config = Puppet::Util::IniConfig::File.new
+      config.read '/root/.my.cnf'
+      unless config['client'].nil?
+        config_host   = config['client']['host']
+        config_user   = config['client']['user']
+        config_passwd = config['client']['password']
+        Mysql.new host=config_host, user=config_user, passwd=config_passwd
+      else
+        Mysql.new
+      end
+    else
+      Mysql.new
+    end
+  end
+end

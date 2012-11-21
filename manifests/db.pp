@@ -44,7 +44,7 @@ define mysql::db (
   database { $name:
     ensure   => present,
     charset  => $charset,
-    provider => 'mysql',
+    #provider => 'mysql',
     require  => Class['mysql::server'],
     notify   => $sql ? {
       ''      => undef,
@@ -58,13 +58,13 @@ define mysql::db (
       /^\*[A-F0-9]+$/ => $password,
       default         => mysql_password($password),
     },
-    provider          => 'mysql',
+    #provider          => 'mysql',
     require           => Database[$name],
   }
 
   database_grant{"${user}@${host}/${name}":
     privileges => $safe_grant,
-    provider   => 'mysql',
+    #provider   => 'mysql',
     require    => Database_user["${user}@${host}"],
   }
 
