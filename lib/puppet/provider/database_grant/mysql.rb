@@ -130,6 +130,7 @@ Puppet::Type.type(:database_grant).provide(:mysql) do
     end
 
     stmt = stmt << set << where
+    debug stmt
 
     dbh = Puppet::Type.type(:database_grant).provider(:mysql).connect
     dbh.select_db('mysql').query stmt
